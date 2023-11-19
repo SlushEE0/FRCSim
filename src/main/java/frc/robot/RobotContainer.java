@@ -5,18 +5,20 @@
 package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.swerve.SwerveModuleIO;
 import frc.robot.commands.swerve.SwerveCMD;
+
+import java.util.function.DoubleSupplier;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class RobotContainer {
-  private final SwerveCMD defaultSubsystem = new SwerveCMD();
+  private final SwerveSubsystem defaultSubsystem = new SwerveSubsystem();
 
-  private final CommandXboxController m_driverController =
-      new CommandXboxController(0);
+  private final CommandXboxController pilot = new CommandXboxController(0);
 
   public RobotContainer() {
     // Configure the trigger bindings
@@ -24,7 +26,10 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-
+    Robot.swerve.setDefaultCommand(
+        new SwerveCMD(defaultSubsystem,
+            new DoubleSupplier[] { () -> pilot.getLeftX(), () -> pilot.getLeftY() },
+            new DoubleSupplier[] { () -> pilot.getRightX(), () -> pilot.getRightY() }));
   }
 
   public Command getAutonomousCommand() {

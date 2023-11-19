@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -22,6 +23,10 @@ public class SwerveSubsystem extends SubsystemBase {
         modules[i] = new SwerveModuleSim();
       }
     }
+  }
+
+  public Rotation2d getRotation2d() {
+    return new Rotation2d();
   }
 
   public void setModuleState(SwerveModuleState[] states) {
