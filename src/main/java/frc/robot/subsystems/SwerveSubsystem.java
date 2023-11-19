@@ -4,46 +4,40 @@
 
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
+import frc.robot.subsystems.swerve.SwerveModuleIO;
+import frc.robot.subsystems.swerve.SwerveModuleSim;
+import frc.robot.subsystems.swerve.SwerveModuleIO.ModuleData;
 
 public class SwerveSubsystem extends SubsystemBase {
-  /** Creates a new ExampleSubsystem. */
+  private final SwerveModuleIO[] modules = new SwerveModuleIO[4];
+  private final ModuleData[] data = new ModuleData[4];
+
   public SwerveSubsystem() {
+    if (Constants.Robot.isSim) {
+      for (int i = 0; i < data.length; i++) {
+        data[i] = new ModuleData();
+        modules[i] = new SwerveModuleSim();
+      }
+    }
   }
 
-  /**
-   * Example command factory method.
-   *
-   * @return a command
-   */
-  public Command exampleMethodCommand() {
-    // Inline construction of command goes here.
-    // Subsystem::RunOnce implicitly requires `this` subsystem.
-    return runOnce(
-        () -> {
-          /* one-time action goes here */
-        });
-  }
-
-  /**
-   * An example method querying a boolean state of the subsystem (for example, a
-   * digital sensor).
-   *
-   * @return value of some boolean subsystem state, such as a digital sensor.
-   */
-  public boolean exampleCondition() {
-    // Query some boolean state, such as a digital sensor.
-    return false;
+  public void setModuleState(SwerveModuleState[] states) {
+    for (int i = 0; i < states.length; i++) {
+      modules[i].setDesiredState(states[i]);
+    }
   }
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    for (int i = 0; i < 4; i++) {
+      modules[i].updateData(data[i]);
+    }
   }
 
   @Override
   public void simulationPeriodic() {
-    // This method will be called once per scheduler run during simulation
   }
 }
