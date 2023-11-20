@@ -1,7 +1,9 @@
 package frc.robot.subsystems.swerve;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -10,8 +12,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 
 public class SwerveModuleSim implements SwerveModuleIO {
-  private FlywheelSim driveSim = new FlywheelSim(DCMotor.getNEO(0), 6.75, 0.025);
-  private FlywheelSim turnSim = new FlywheelSim(DCMotor.getNEO(0), 150 / 7, 0.004);
+  private FlywheelSim driveSim = new FlywheelSim(DCMotor.getNEO(1), 6.75, 0.025);
+  private FlywheelSim turnSim = new FlywheelSim(DCMotor.getNEO(1), 150 / 7, 0.004);
 
   private PIDController drivePID = new PIDController(0, 0, 0);
   private PIDController turnPID = new PIDController(0, 0, 0);
@@ -30,6 +32,15 @@ public class SwerveModuleSim implements SwerveModuleIO {
   private double turnAppliedVolts = 0.0;
   private double turnCurrentAmps = 0.0;
 
+  public SwerveModuleSim() {
+    turnPID.enableContinuousInput(0, 2 * Math.PI);
+  }
+
+  private SwerveModuleState getCurrState() {
+    return new SwerveModuleState(driveSim.getAngularVelocityRadPerSec() * Constants.Swerve.wheelDiamM / 2,
+        new Rotation2d(turnPositionRad));
+  }
+
   @Override
   public void updateData(ModuleData data) {
     driveSim.update(0.02);
@@ -46,20 +57,38 @@ public class SwerveModuleSim implements SwerveModuleIO {
 
     turnPositionRad += (turnSim.getAngularVelocityRadPerSec() * 0.02);
     data.turnPositionRad = turnPositionRad;
+
+    while (turnPositionRad < 0) {
+      turnPositionRad += 2.0 * Math.PI;
+    }
+
+    while (turnPositionRad > 2.0 * Math.PI) {
+      turnPositionRad -= 2.0 * Math.PI;
+    }
   }
 
   @Override
   public void setDesiredState(SwerveModuleState state) {
+    state = SwerveModuleState.optimize(state, getCurrState().angle);
+    theoreticalState = state;
+
     double driveFFVolts = driveFF.calculate(driveVelocityMPerSec, driveAppliedVolts);
     double driveVolts = drivePID.calculate(driveVelocityMPerSec, state.speedMetersPerSecond);
     double turnVolts = turnPID.calculate(turnPositionRad, state.angle.getRadians());
 
-    driveSim.setInputVoltage(driveVolts + driveFFVolts);
-    turnSim.setInputVoltage(turnVolts);
+    setMotorVolts(driveVolts + driveFFVolts, driveSim);
+    setMotorVolts(turnVolts, turnSim);
+  }
+
+  private void setMotorVolts(double volts, FlywheelSim flywheel) {
+    double setVolts = MathUtil.clamp(volts, -7.0, 7.0);
+    flywheel.setInputVoltage(setVolts);
   }
 
   @Override
   public void stop() {
+    setMotorVolts(0.0, driveSim);
+    setMotorVolts(0.0, turnSim);
   }
 
   @Override
