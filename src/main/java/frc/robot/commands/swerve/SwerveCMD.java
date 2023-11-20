@@ -6,7 +6,7 @@ package frc.robot.commands.swerve;
 
 import frc.robot.Constants;
 import frc.robot.Robot;
-import frc.robot.subsystems.SwerveSubsystem;
+import frc.robot.subsystems.Swerve;
 
 import java.util.function.DoubleSupplier;
 
@@ -19,7 +19,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 public class SwerveCMD extends Command {
   @SuppressWarnings({ "PMD.UnusedPrivateField", "PMD.SingularField" })
 
-  private SwerveSubsystem subsystem;
+  private Swerve subsystem;
   private DoubleSupplier leftXSupplier;
   private DoubleSupplier leftYSupplier;
   private DoubleSupplier rightXSupplier;
@@ -27,7 +27,7 @@ public class SwerveCMD extends Command {
   private final SlewRateLimiter driveLimiter = new SlewRateLimiter(Constants.Swerve.maxDriveAccelMPS);
   private final SlewRateLimiter turnLimiter = new SlewRateLimiter(Constants.Swerve.maxTurnAccelRadPs);
 
-  public SwerveCMD(SwerveSubsystem subsystem, DoubleSupplier[] leftJoystick, DoubleSupplier[] rightJoystick) {
+  public SwerveCMD(Swerve subsystem, DoubleSupplier[] leftJoystick, DoubleSupplier[] rightJoystick) {
     this.subsystem = subsystem;
     this.leftXSupplier = leftJoystick[0];
     this.leftYSupplier = leftJoystick[1];

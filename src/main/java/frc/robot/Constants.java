@@ -39,6 +39,8 @@ public final class Constants {
     public static final double horizontalBaseM = Units.inchesToMeters(17.5);
     public static final double verticalBaseM = Units.inchesToMeters(17.5);
 
+    public static final double wheelDiamM = Units.inchesToMeters(3.5); 
+
     public static final SwerveDriveKinematics driveKinematics = new SwerveDriveKinematics(
         new Translation2d(horizontalBaseM / 2, verticalBaseM / 2),
         new Translation2d(horizontalBaseM / 2, -verticalBaseM / 2),

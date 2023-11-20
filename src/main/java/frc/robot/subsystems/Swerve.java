@@ -12,11 +12,11 @@ import frc.robot.subsystems.swerve.SwerveModuleIO;
 import frc.robot.subsystems.swerve.SwerveModuleSim;
 import frc.robot.subsystems.swerve.SwerveModuleIO.ModuleData;
 
-public class SwerveSubsystem extends SubsystemBase {
+public class Swerve extends SubsystemBase {
   private final SwerveModuleIO[] modules = new SwerveModuleIO[4];
   private final ModuleData[] data = new ModuleData[4];
 
-  public SwerveSubsystem() {
+  public Swerve() {
     if (Constants.Robot.isSim) {
       for (int i = 0; i < data.length; i++) {
         data[i] = new ModuleData();
@@ -30,7 +30,7 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   public void setModuleState(SwerveModuleState[] states) {
-    for (int i = 0; i < states.length; i++) {
+    for (int i = 0; i < 4; i++) {
       modules[i].setDesiredState(states[i]);
     }
   }
