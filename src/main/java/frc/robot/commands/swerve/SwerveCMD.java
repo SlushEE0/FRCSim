@@ -6,13 +6,14 @@ package frc.robot.commands.swerve;
 
 import frc.robot.Constants;
 import frc.robot.Robot;
-import frc.robot.subsystems.Swerve;
+import frc.robot.subsystems.swerve.Swerve;
 
 import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
 /** An example command that uses an example subsystem. */
@@ -24,7 +25,8 @@ public class SwerveCMD extends CommandBase {
   private DoubleSupplier leftYSupplier;
   private DoubleSupplier rightXSupplier;
 
-  private final SlewRateLimiter driveLimiter = new SlewRateLimiter(Constants.Swerve.maxDriveAccelMPS);
+  private final SlewRateLimiter xDriveLimiter = new SlewRateLimiter(Constants.Swerve.maxDriveAccelMPS);
+  private final SlewRateLimiter yDriveLimiter = new SlewRateLimiter(Constants.Swerve.maxDriveAccelMPS);
   private final SlewRateLimiter turnLimiter = new SlewRateLimiter(Constants.Swerve.maxTurnAccelRadPs);
 
   public SwerveCMD(Swerve subsystem, DoubleSupplier[] leftJoystick, DoubleSupplier[] rightJoystick) {
@@ -47,21 +49,28 @@ public class SwerveCMD extends CommandBase {
   @Override
   public void execute() {
     double xSpeed = leftXSupplier.getAsDouble();
-    double ySpeed = -(leftYSupplier.getAsDouble());
+    double ySpeed = (leftYSupplier.getAsDouble());
     double turnSpeed = rightXSupplier.getAsDouble();
 
-    xSpeed = xSpeed > Constants.Swerve.controllerDeadband ? xSpeed : 0;
-    ySpeed = xSpeed > Constants.Swerve.controllerDeadband ? ySpeed : 0;
-    turnSpeed = xSpeed > Constants.Swerve.controllerDeadband ? turnSpeed : 0;
+    xSpeed = Math.abs(xSpeed) > Constants.Swerve.controllerDeadband ? xSpeed : 0;
+    ySpeed = Math.abs(ySpeed) > Constants.Swerve.controllerDeadband ? ySpeed : 0;
+    turnSpeed = Math.abs(turnSpeed) > Constants.Swerve.controllerDeadband ? turnSpeed : 0;
 
-    xSpeed = driveLimiter.calculate(xSpeed * Constants.Swerve.maxSpeedMPS);
-    ySpeed = driveLimiter.calculate(ySpeed * Constants.Swerve.maxSpeedMPS);
+    xSpeed = xDriveLimiter.calculate(xSpeed * Constants.Swerve.maxSpeedMPS);
+    ySpeed = yDriveLimiter.calculate(ySpeed * Constants.Swerve.maxSpeedMPS);
     turnSpeed = turnLimiter.calculate(turnSpeed * Constants.Swerve.maxTurnSpeedRadPS);
 
+    SmartDashboard.putNumber("turnSpeed", turnSpeed);
+
+    // ChassisSpeeds f = new ChassisSpeeds();
     ChassisSpeeds chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, turnSpeed,
         Robot.swerve.getRotation2d());
+    
+    SmartDashboard.putNumber("CS vX", chassisSpeeds.vxMetersPerSecond);
+    SmartDashboard.putNumber("CS vY", chassisSpeeds.vyMetersPerSecond);
 
     SwerveModuleState[] states = Constants.Swerve.driveKinematics.toSwerveModuleStates(chassisSpeeds);
+    
     Robot.swerve.setModuleState(states);
   }
 

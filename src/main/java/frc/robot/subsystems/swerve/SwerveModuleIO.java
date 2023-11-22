@@ -18,6 +18,8 @@ public interface SwerveModuleIO {
     public double turnAppliedVolts = 0.0;
     public double turnCurrentAmps = 0.0;
     public double turnTempCelcius = 0.0;
+
+    public int index = 0;
   }
 
   /** Updates the set of loggable inputs. */
