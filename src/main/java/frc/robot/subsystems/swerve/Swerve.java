@@ -21,16 +21,16 @@ public class Swerve extends SubsystemBase {
 
   public Swerve() {
     if (Constants.Robot.isSim) {
-      for (int i = 0; i < data.length; i++) {
+      for (int i = 0; i < 4; i++) {
+        modules[i] = new SwerveModuleSim();
         data[i] = new ModuleData();
         data[i].index = i;
-        modules[i] = new SwerveModuleSim();
       }
     }
   }
 
-  public Rotation2d getRotation2d(double angleRad) {
-    return new Rotation2d(angleRad);
+  public Rotation2d getRotation2d() {
+    return new Rotation2d();
   }
 
   public void setModuleState(SwerveModuleState[] states) {
@@ -38,6 +38,12 @@ public class Swerve extends SubsystemBase {
     for (int i = 0; i < 4; i++) {
       modules[i].setDesiredState(states[i]);
     }
+
+    for (int i = 0; i < 4; i++) {
+      modules[i].updateData(data[i]);
+    }
+    
+    periodic();
   }
 
   public void setRotationRad(double rotation) {

@@ -21,7 +21,6 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 public class SwerveCMD extends CommandBase {
   @SuppressWarnings({ "PMD.UnusedPrivateField", "PMD.SingularField" })
 
-  private Swerve subsystem;
   private DoubleSupplier leftXSupplier;
   private DoubleSupplier leftYSupplier;
   private DoubleSupplier rightXSupplier;
@@ -33,8 +32,6 @@ public class SwerveCMD extends CommandBase {
   static double drivetrainRotation = 0.0;
 
   public SwerveCMD(Swerve subsystem, DoubleSupplier[] leftJoystick, DoubleSupplier[] rightJoystick) {
-    this.subsystem = subsystem;
-
     this.leftXSupplier = leftJoystick[0];
     this.leftYSupplier = leftJoystick[1];
 
@@ -66,14 +63,13 @@ public class SwerveCMD extends CommandBase {
     turnSpeed = turnLimiter.calculate(turnSpeed * Constants.Swerve.maxTurnSpeedRadPS);
 
     ChassisSpeeds chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, turnSpeed,
-        Robot.swerve.getRotation2d(drivetrainRotation));
+        Robot.swerve.getRotation2d());
 
     SwerveModuleState[] states = Constants.Swerve.driveKinematics.toSwerveModuleStates(chassisSpeeds);
     
     drivetrainRotation = chassisSpeeds.omegaRadiansPerSecond;
 
     Robot.swerve.setModuleState(states);
-    Robot.swerve.setRotationRad(drivetrainRotation);
   }
 
   @Override

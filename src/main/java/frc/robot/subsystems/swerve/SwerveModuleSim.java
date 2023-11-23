@@ -15,10 +15,10 @@ public class SwerveModuleSim implements SwerveModuleIO {
   private FlywheelSim driveSim = new FlywheelSim(DCMotor.getNEO(1), 6.75, 0.025);
   private FlywheelSim turnSim = new FlywheelSim(DCMotor.getNEO(1), 150 / 7, 0.004);
 
-  private PIDController drivePID = new PIDController(0.25, 0, 0);
+  private PIDController drivePID = new PIDController(1, 0, 0);
   private PIDController turnPID = new PIDController(1, 0, 0);
 
-  private SimpleMotorFeedforward driveFF = new SimpleMotorFeedforward(0, 1);
+  private SimpleMotorFeedforward driveFF = new SimpleMotorFeedforward(0, 0);
 
   private SwerveModulePosition position = new SwerveModulePosition();
   private SwerveModuleState theoreticalState = new SwerveModuleState();
@@ -49,18 +49,21 @@ public class SwerveModuleSim implements SwerveModuleIO {
 
     SmartDashboard.putNumber("Drive vel " + data.index,
         driveSim.getAngularVelocityRadPerSec() * (Constants.Swerve.wheelDiamM / 2));
+
+    double meterDiff = driveSim.getAngularVelocityRadPerSec() * Constants.Swerve.wheelDiamM / 2 * 0.02;
+    drivePositionM += meterDiff;
     data.driveVelocityMPerSec = driveSim.getAngularVelocityRadPerSec() * (Constants.Swerve.wheelDiamM / 2);
-    
-    data.turnVelocityRadPerSec = turnSim.getAngularVelocityRadPerSec();
-
     data.driveCurrentAmps = driveSim.getCurrentDrawAmps();
-    data.turnCurrentAmps = turnSim.getCurrentDrawAmps();
-
-    drivePositionM += driveSim.getAngularVelocityRadPerSec() * 0.02 * (Constants.Swerve.wheelDiamM / 2);
     data.drivePositionM = drivePositionM;
+    data.driveAppliedVolts = driveAppliedVolts;
 
-    turnPositionRad += (turnSim.getAngularVelocityRadPerSec() * 0.02);
+    double angleDiff = turnSim.getAngularVelocityRadPerSec() * 0.02;
+    turnPositionRad += angleDiff;
     data.turnPositionRad = turnPositionRad;
+    data.turnVelocityRadPerSec = turnSim.getAngularVelocityRadPerSec();
+    data.turnAppliedVolts = turnAppliedVolts;
+    data.turnCurrentAmps = turnSim.getCurrentDrawAmps();
+    data.turnAppliedVolts = turnAppliedVolts;
 
     while (turnPositionRad < 0) {
       turnPositionRad += 2.0 * Math.PI;
@@ -80,8 +83,13 @@ public class SwerveModuleSim implements SwerveModuleIO {
 
     SmartDashboard.putNumber("State Speed " + index, theoreticalState.speedMetersPerSecond);
 
+    if (Math.abs(state.speedMetersPerSecond) < 0.01) {
+      state.speedMetersPerSecond = 0;
+    }
+
     double driveFFVolts = driveFF.calculate(state.speedMetersPerSecond);
-    double driveVolts = drivePID.calculate(driveVelocityMPerSec, state.speedMetersPerSecond);
+    double driveVolts = drivePID.calculate(driveSim.getAngularVelocityRadPerSec() * Constants.Swerve.wheelDiamM / 2,
+        state.speedMetersPerSecond);
     double turnVolts = turnPID.calculate(turnPositionRad, state.angle.getRadians());
 
     SmartDashboard.putNumber("Drive Volts" + index, driveFFVolts + driveVolts);
@@ -91,15 +99,15 @@ public class SwerveModuleSim implements SwerveModuleIO {
   }
 
   private void setMotorVolts(double volts, FlywheelSim flywheel) {
-    double setVolts = MathUtil.clamp(volts, -7.0, 7.0);
+    double setVolts = volts; // MathUtil.clamp(volts, -7.0, 7.0);
 
     flywheel.setInputVoltage(setVolts);
   }
 
   @Override
   public void stop() {
-    // setMotorVolts(0.0, driveSim);
-    // setMotorVolts(0.0, turnSim);
+    setMotorVolts(0.0, driveSim);
+    setMotorVolts(0.0, turnSim);
   }
 
   @Override
