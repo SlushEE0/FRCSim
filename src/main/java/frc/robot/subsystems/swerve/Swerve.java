@@ -33,14 +33,10 @@ public class Swerve extends SubsystemBase {
       modules[i].setDesiredState(states[i]);
     }
 
-    for (int i = 0; i < 4; i++) {
-      modules[i].updateData(data[i]);
-    }
-
     periodic();
   }
 
-  public void setRotationRad(double rotation) {
+  public void setDrivetrainRotation(double rotation) {
     drivetrainRotationRad = rotation;
   }
 

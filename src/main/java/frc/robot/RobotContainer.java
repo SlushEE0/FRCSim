@@ -33,17 +33,13 @@ public class RobotContainer {
   public RobotContainer() {
     // Configure the trigger bindings
     configureBindings();
-    DataLogManager.start(".wpilog");
-    DataLogManager.logNetworkTables(true);
-
-    DriverStation.startDataLog(DataLogManager.getLog(), true);
   }
 
   private void configureBindings() {
     Robot.swerve.setDefaultCommand(
         new SwerveCMD(
-            new DoubleSupplier[] { () -> -pilot.getLeftY(), () -> -pilot.getLeftX() },
-            new DoubleSupplier[] { () -> pilot.getLeftY(), () -> -pilot.getRightX() }));
+            new DoubleSupplier[] { () -> -pilot.getLeftX(), () -> -pilot.getLeftY() },
+            new DoubleSupplier[] { () -> pilot.getLeftX(), () -> -pilot.getRightY() }));
 
   }
 

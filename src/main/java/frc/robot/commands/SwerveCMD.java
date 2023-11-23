@@ -23,13 +23,13 @@ public class SwerveCMD extends CommandBase {
   private final SlewRateLimiter yDriveLimiter = new SlewRateLimiter(Constants.Swerve.maxDriveAccelMPS);
   private final SlewRateLimiter turnLimiter = new SlewRateLimiter(Constants.Swerve.maxRotationAccelRadPS);
 
-  static double drivetrainRotation = 0.0;
+  static double drivetrainRotationRad = 0.0;
 
   public SwerveCMD(DoubleSupplier[] leftJoystick, DoubleSupplier[] rightJoystick) {
-    this.leftXSupplier = leftJoystick[0];
-    this.leftYSupplier = leftJoystick[1];
+    this.leftXSupplier = leftJoystick[1];
+    this.leftYSupplier = leftJoystick[0];
 
-    this.rightXSupplier = rightJoystick[0];
+    this.rightXSupplier = rightJoystick[1];
 
     addRequirements(Robot.swerve);
   }
@@ -61,9 +61,10 @@ public class SwerveCMD extends CommandBase {
 
     SwerveModuleState[] states = Constants.Swerve.driveKinematics.toSwerveModuleStates(chassisSpeeds);
 
-    drivetrainRotation = chassisSpeeds.omegaRadiansPerSecond;
+    drivetrainRotationRad = chassisSpeeds.omegaRadiansPerSecond;
 
     Robot.swerve.setModuleStates(states);
+    Robot.swerve.setDrivetrainRotation(drivetrainRotationRad);
   }
 
   @Override
