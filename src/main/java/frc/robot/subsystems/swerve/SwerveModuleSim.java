@@ -15,7 +15,7 @@ public class SwerveModuleSim implements SwerveModuleIO {
   private FlywheelSim driveSim = new FlywheelSim(DCMotor.getNEO(1), 6.75, 0.025);
   private FlywheelSim turnSim = new FlywheelSim(DCMotor.getNEO(1), 150 / 7, 0.004);
 
-  private PIDController drivePID = new PIDController(0, 0, 0);
+  private PIDController drivePID = new PIDController(0.25, 0, 0);
   private PIDController turnPID = new PIDController(1, 0, 0);
 
   private SimpleMotorFeedforward driveFF = new SimpleMotorFeedforward(0, 1);
@@ -32,6 +32,7 @@ public class SwerveModuleSim implements SwerveModuleIO {
   private double turnAppliedVolts = 0.0;
   private double turnCurrentAmps = 0.0;
   private int index = 0;
+
   public SwerveModuleSim() {
     turnPID.enableContinuousInput(0, 2 * Math.PI);
   }
@@ -45,9 +46,11 @@ public class SwerveModuleSim implements SwerveModuleIO {
   public void updateData(ModuleData data) {
     driveSim.update(0.02);
     turnSim.update(0.02);
-    index = data.index;
-    SmartDashboard.putNumber("Drive vel " + data.index, driveSim.getAngularVelocityRadPerSec() * (Constants.Swerve.wheelDiamM / 2));
+
+    SmartDashboard.putNumber("Drive vel " + data.index,
+        driveSim.getAngularVelocityRadPerSec() * (Constants.Swerve.wheelDiamM / 2));
     data.driveVelocityMPerSec = driveSim.getAngularVelocityRadPerSec() * (Constants.Swerve.wheelDiamM / 2);
+    
     data.turnVelocityRadPerSec = turnSim.getAngularVelocityRadPerSec();
 
     data.driveCurrentAmps = driveSim.getCurrentDrawAmps();
@@ -68,22 +71,22 @@ public class SwerveModuleSim implements SwerveModuleIO {
     }
 
     data.theoreticalState = theoreticalState;
-    SmartDashboard.putNumber("theroeritcal speed " + data.index,
-    theoreticalState.speedMetersPerSecond);
-
   }
 
   @Override
   public void setDesiredState(SwerveModuleState state) {
-    state = SwerveModuleState.optimize(state, new Rotation2d(turnPositionRad));
+    state = SwerveModuleState.optimize(state, getCurrState().angle);
     theoreticalState = state;
-    SmartDashboard.putNumber("State Speed " + index , theoreticalState.speedMetersPerSecond);
+
+    SmartDashboard.putNumber("State Speed " + index, theoreticalState.speedMetersPerSecond);
 
     double driveFFVolts = driveFF.calculate(state.speedMetersPerSecond);
     double driveVolts = drivePID.calculate(driveVelocityMPerSec, state.speedMetersPerSecond);
     double turnVolts = turnPID.calculate(turnPositionRad, state.angle.getRadians());
-    SmartDashboard.putNumber("Drive Volts", driveFFVolts + driveVolts);
-    driveSim.setInputVoltage(driveVolts + driveFFVolts);
+
+    SmartDashboard.putNumber("Drive Volts" + index, driveFFVolts + driveVolts);
+
+    setMotorVolts(driveFFVolts + driveVolts, driveSim);
     setMotorVolts(turnVolts, turnSim);
   }
 

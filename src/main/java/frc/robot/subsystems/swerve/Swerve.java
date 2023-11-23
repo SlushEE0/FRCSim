@@ -6,6 +6,7 @@ package frc.robot.subsystems.swerve;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -15,6 +16,8 @@ import frc.robot.subsystems.swerve.SwerveModuleIO.ModuleData;
 public class Swerve extends SubsystemBase {
   private final SwerveModuleIO[] modules = new SwerveModuleIO[4];
   private final ModuleData[] data = new ModuleData[4];
+
+  private static double drivetrainRotationRad;
 
   public Swerve() {
     if (Constants.Robot.isSim) {
@@ -26,8 +29,8 @@ public class Swerve extends SubsystemBase {
     }
   }
 
-  public Rotation2d getRotation2d() {
-    return new Rotation2d();
+  public Rotation2d getRotation2d(double angleRad) {
+    return new Rotation2d(angleRad);
   }
 
   public void setModuleState(SwerveModuleState[] states) {
@@ -35,6 +38,10 @@ public class Swerve extends SubsystemBase {
     for (int i = 0; i < 4; i++) {
       modules[i].setDesiredState(states[i]);
     }
+  }
+
+  public void setRotationRad(double rotation) {
+    drivetrainRotationRad = rotation;
   }
 
   @Override
@@ -65,8 +72,9 @@ public class Swerve extends SubsystemBase {
         data[3].theoreticalState.speedMetersPerSecond
     };
 
-    SmartDashboard.putNumberArray("States", realStates);
+    SmartDashboard.putNumberArray("Real States", realStates);
     SmartDashboard.putNumberArray("Theoretical States", theoryStates);
+    SmartDashboard.putNumber("Drivetrain Rotation", Math.toDegrees(drivetrainRotationRad));
   }
 
   @Override

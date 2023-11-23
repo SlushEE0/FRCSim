@@ -11,6 +11,7 @@ import frc.robot.subsystems.swerve.Swerve;
 import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -29,8 +30,11 @@ public class SwerveCMD extends CommandBase {
   private final SlewRateLimiter yDriveLimiter = new SlewRateLimiter(Constants.Swerve.maxDriveAccelMPS);
   private final SlewRateLimiter turnLimiter = new SlewRateLimiter(Constants.Swerve.maxTurnAccelRadPs);
 
+  static double drivetrainRotation = 0.0;
+
   public SwerveCMD(Swerve subsystem, DoubleSupplier[] leftJoystick, DoubleSupplier[] rightJoystick) {
     this.subsystem = subsystem;
+
     this.leftXSupplier = leftJoystick[0];
     this.leftYSupplier = leftJoystick[1];
 
@@ -48,6 +52,7 @@ public class SwerveCMD extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+
     double xSpeed = leftXSupplier.getAsDouble();
     double ySpeed = (leftYSupplier.getAsDouble());
     double turnSpeed = rightXSupplier.getAsDouble();
@@ -60,26 +65,21 @@ public class SwerveCMD extends CommandBase {
     ySpeed = yDriveLimiter.calculate(ySpeed * Constants.Swerve.maxSpeedMPS);
     turnSpeed = turnLimiter.calculate(turnSpeed * Constants.Swerve.maxTurnSpeedRadPS);
 
-    SmartDashboard.putNumber("turnSpeed", turnSpeed);
-
-    // ChassisSpeeds f = new ChassisSpeeds();
     ChassisSpeeds chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, turnSpeed,
-        Robot.swerve.getRotation2d());
-    
-    SmartDashboard.putNumber("CS vX", chassisSpeeds.vxMetersPerSecond);
-    SmartDashboard.putNumber("CS vY", chassisSpeeds.vyMetersPerSecond);
+        Robot.swerve.getRotation2d(drivetrainRotation));
 
     SwerveModuleState[] states = Constants.Swerve.driveKinematics.toSwerveModuleStates(chassisSpeeds);
     
+    drivetrainRotation = chassisSpeeds.omegaRadiansPerSecond;
+
     Robot.swerve.setModuleState(states);
+    Robot.swerve.setRotationRad(drivetrainRotation);
   }
 
-  // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
   }
 
-  // Returns true when the command should end.
   @Override
   public boolean isFinished() {
     return false;
