@@ -57,13 +57,13 @@ public class Swerve extends SubsystemBase {
     }
 
     double[] realStates = {
-        data[0].turnPositionRad / Math.PI * 100,
+        Math.toDegrees(data[0].turnPositionRad),
         data[0].driveVelocityMPerSec,
-        data[1].turnPositionRad / Math.PI * 100,
+        Math.toDegrees(data[1].turnPositionRad),
         data[1].driveVelocityMPerSec,
-        data[2].turnPositionRad / Math.PI * 100,
+        Math.toDegrees(data[2].turnPositionRad),
         data[2].driveVelocityMPerSec,
-        data[3].turnPositionRad / Math.PI * 100,
+        Math.toDegrees(data[3].turnPositionRad),
         data[3].driveVelocityMPerSec
     };
 
