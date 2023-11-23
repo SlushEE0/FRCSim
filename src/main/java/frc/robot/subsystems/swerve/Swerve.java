@@ -1,12 +1,7 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.subsystems.swerve;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -20,11 +15,10 @@ public class Swerve extends SubsystemBase {
   private static double drivetrainRotationRad;
 
   public Swerve() {
-    if (Constants.Robot.isSim) {
+    if (Constants.robot.isSim) {
       for (int i = 0; i < 4; i++) {
         modules[i] = new SwerveModuleSim();
         data[i] = new ModuleData();
-        data[i].index = i;
       }
     }
   }
@@ -33,20 +27,16 @@ public class Swerve extends SubsystemBase {
     return new Rotation2d();
   }
 
-  public void setModuleState(SwerveModuleState[] states) {
+  public void setModuleStates(SwerveModuleState[] states) {
     SwerveDriveKinematics.desaturateWheelSpeeds(states, Constants.Swerve.maxSpeedMPS);
     for (int i = 0; i < 4; i++) {
       modules[i].setDesiredState(states[i]);
     }
 
-    for (int i = 0; i < 4; i++) {
-      modules[i].updateData(data[i]);
-    }
-    
     periodic();
   }
 
-  public void setRotationRad(double rotation) {
+  public void setDrivetrainRotation(double rotation) {
     drivetrainRotationRad = rotation;
   }
 

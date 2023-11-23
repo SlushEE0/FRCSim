@@ -1,8 +1,4 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
-package frc.robot.commands.swerve;
+package frc.robot.commands;
 
 import frc.robot.Constants;
 import frc.robot.Robot;
@@ -11,10 +7,8 @@ import frc.robot.subsystems.swerve.Swerve;
 import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
-import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
 /** An example command that uses an example subsystem. */
@@ -27,15 +21,15 @@ public class SwerveCMD extends CommandBase {
 
   private final SlewRateLimiter xDriveLimiter = new SlewRateLimiter(Constants.Swerve.maxDriveAccelMPS);
   private final SlewRateLimiter yDriveLimiter = new SlewRateLimiter(Constants.Swerve.maxDriveAccelMPS);
-  private final SlewRateLimiter turnLimiter = new SlewRateLimiter(Constants.Swerve.maxTurnAccelRadPs);
+  private final SlewRateLimiter turnLimiter = new SlewRateLimiter(Constants.Swerve.maxRotationAccelRadPS);
 
-  static double drivetrainRotation = 0.0;
+  static double drivetrainRotationRad = 0.0;
 
-  public SwerveCMD(Swerve subsystem, DoubleSupplier[] leftJoystick, DoubleSupplier[] rightJoystick) {
-    this.leftXSupplier = leftJoystick[0];
-    this.leftYSupplier = leftJoystick[1];
+  public SwerveCMD(DoubleSupplier[] leftJoystick, DoubleSupplier[] rightJoystick) {
+    this.leftXSupplier = leftJoystick[1];
+    this.leftYSupplier = leftJoystick[0];
 
-    this.rightXSupplier = rightJoystick[0];
+    this.rightXSupplier = rightJoystick[1];
 
     addRequirements(Robot.swerve);
   }
@@ -60,16 +54,17 @@ public class SwerveCMD extends CommandBase {
 
     xSpeed = xDriveLimiter.calculate(xSpeed * Constants.Swerve.maxSpeedMPS);
     ySpeed = yDriveLimiter.calculate(ySpeed * Constants.Swerve.maxSpeedMPS);
-    turnSpeed = turnLimiter.calculate(turnSpeed * Constants.Swerve.maxTurnSpeedRadPS);
+    turnSpeed = turnLimiter.calculate(turnSpeed * Constants.Swerve.maxRotationSpeedRadPS);
 
     ChassisSpeeds chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, turnSpeed,
         Robot.swerve.getRotation2d());
 
     SwerveModuleState[] states = Constants.Swerve.driveKinematics.toSwerveModuleStates(chassisSpeeds);
-    
-    drivetrainRotation = chassisSpeeds.omegaRadiansPerSecond;
 
-    Robot.swerve.setModuleState(states);
+    drivetrainRotationRad = chassisSpeeds.omegaRadiansPerSecond;
+
+    Robot.swerve.setModuleStates(states);
+    Robot.swerve.setDrivetrainRotation(drivetrainRotationRad);
   }
 
   @Override

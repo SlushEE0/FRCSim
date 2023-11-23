@@ -21,25 +21,24 @@ import edu.wpi.first.math.util.Units;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
+
+  public static class robot {
+    public static final boolean isSim = true;
+  }
+
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
   }
 
-  public static class Robot {
-    public static final boolean isSim = true;
-  }
-
   public static class Swerve {
     public static final double maxSpeedMPS = 5;
-    public static final double maxTurnSpeedRadPS = 2 * Math.PI;
-    public static final double maxDriveAccelMPS = 5;
-    public static final double maxTurnAccelRadPs = 2 * Math.PI;
+    public static final double maxRotationSpeedRadPS = 2 * Math.PI;
     public static final double controllerDeadband = 0.1;
-
+    public static final double maxDriveAccelMPS = 5;
+    public static final double maxRotationAccelRadPS = 2 * Math.PI;
     public static final double horizontalBaseM = Units.inchesToMeters(17.5);
+    public static final double wheelDiamM = Units.inchesToMeters(3.5);
     public static final double verticalBaseM = Units.inchesToMeters(17.5);
-
-    public static final double wheelDiamM = Units.inchesToMeters(3.5); 
 
     public static final SwerveDriveKinematics driveKinematics = new SwerveDriveKinematics(
         new Translation2d(horizontalBaseM / 2, verticalBaseM / 2),

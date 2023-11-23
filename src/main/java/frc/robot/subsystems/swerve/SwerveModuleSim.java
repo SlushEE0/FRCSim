@@ -16,9 +16,9 @@ public class SwerveModuleSim implements SwerveModuleIO {
   private FlywheelSim turnSim = new FlywheelSim(DCMotor.getNEO(1), 150 / 7, 0.004);
 
   private PIDController drivePID = new PIDController(1, 0, 0);
-  private PIDController turnPID = new PIDController(1, 0, 0);
+  private PIDController turnPID = new PIDController(7, 0, 0);
 
-  private SimpleMotorFeedforward driveFF = new SimpleMotorFeedforward(0, 0);
+  private SimpleMotorFeedforward driveFF = new SimpleMotorFeedforward(0, 3);
 
   private SwerveModulePosition position = new SwerveModulePosition();
   private SwerveModuleState theoreticalState = new SwerveModuleState();
@@ -47,8 +47,8 @@ public class SwerveModuleSim implements SwerveModuleIO {
     driveSim.update(0.02);
     turnSim.update(0.02);
 
-    SmartDashboard.putNumber("Drive vel " + data.index,
-        driveSim.getAngularVelocityRadPerSec() * (Constants.Swerve.wheelDiamM / 2));
+    // SmartDashboard.putNumber("Drive vel " + data.index,
+    //     driveSim.getAngularVelocityRadPerSec() * (Constants.Swerve.wheelDiamM / 2));
 
     double meterDiff = driveSim.getAngularVelocityRadPerSec() * Constants.Swerve.wheelDiamM / 2 * 0.02;
     drivePositionM += meterDiff;

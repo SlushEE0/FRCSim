@@ -4,22 +4,32 @@
 
 package frc.robot;
 
+import frc.robot.Constants.OperatorConstants;
+import frc.robot.commands.SwerveCMD;
+
 import java.util.function.DoubleSupplier;
 
-import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.commands.swerve.SwerveCMD;
-import frc.robot.subsystems.swerve.Swerve;
-import frc.robot.Constants;
 
+/**
+ * This class is where the bulk of the robot should be declared. Since
+ * Command-based is a
+ * "declarative" paradigm, very little robot logic should actually be handled in
+ * the {@link Robot}
+ * periodic methods (other than the scheduler calls). Instead, the structure of
+ * the robot (including
+ * subsystems, commands, and trigger mappings) should be declared here.
+ */
 public class RobotContainer {
-  private final Swerve defaultSubsystem = new Swerve();
+  private final CommandXboxController pilot = new CommandXboxController(OperatorConstants.kDriverControllerPort);
 
-  private final CommandXboxController pilot = new CommandXboxController(0);
-  // private final XboxController pilot = new XboxController(0);
-
+  /**
+   * The container for the robot. Contains subsystems, OI devices, and commands.
+   */
   public RobotContainer() {
     // Configure the trigger bindings
     configureBindings();
@@ -27,13 +37,18 @@ public class RobotContainer {
 
   private void configureBindings() {
     Robot.swerve.setDefaultCommand(
-        new SwerveCMD(defaultSubsystem,
-            new DoubleSupplier[] { () -> -pilot.getLeftY(), () -> -pilot.getLeftX() },
-            new DoubleSupplier[] { () -> pilot.getLeftY(), () -> -pilot.getRightX() }));
+        new SwerveCMD(
+            new DoubleSupplier[] { () -> -pilot.getLeftX(), () -> -pilot.getLeftY() },
+            new DoubleSupplier[] { () -> pilot.getLeftX(), () -> -pilot.getRightY() }));
+
   }
 
+  /**
+   * Use this to pass the autonomous command to the main {@link Robot} class.
+   *
+   * @return the command to run in autonomous
+   */
   public Command getAutonomousCommand() {
-    // An example command will be run in autonomous
-    return new PrintCommand("not Auto");
+    return new PrintCommand("no auto");
   }
 }
