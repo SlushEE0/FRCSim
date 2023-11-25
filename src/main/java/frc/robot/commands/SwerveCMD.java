@@ -7,6 +7,7 @@ import frc.robot.subsystems.swerve.Swerve;
 import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj2.command.CommandBase;
@@ -22,8 +23,6 @@ public class SwerveCMD extends CommandBase {
   private final SlewRateLimiter xDriveLimiter = new SlewRateLimiter(Constants.Swerve.maxDriveAccelMPS);
   private final SlewRateLimiter yDriveLimiter = new SlewRateLimiter(Constants.Swerve.maxDriveAccelMPS);
   private final SlewRateLimiter turnLimiter = new SlewRateLimiter(Constants.Swerve.maxRotationAccelRadPS);
-
-  static double drivetrainRotationRad = 0.0;
 
   public SwerveCMD(DoubleSupplier[] leftJoystick, DoubleSupplier[] rightJoystick) {
     this.leftXSupplier = leftJoystick[1];
@@ -43,7 +42,6 @@ public class SwerveCMD extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-
     double xSpeed = leftXSupplier.getAsDouble();
     double ySpeed = (leftYSupplier.getAsDouble());
     double turnSpeed = rightXSupplier.getAsDouble();
@@ -61,10 +59,8 @@ public class SwerveCMD extends CommandBase {
 
     SwerveModuleState[] states = Constants.Swerve.driveKinematics.toSwerveModuleStates(chassisSpeeds);
 
-    drivetrainRotationRad = chassisSpeeds.omegaRadiansPerSecond;
-
     Robot.swerve.setModuleStates(states);
-    Robot.swerve.setDrivetrainRotation(drivetrainRotationRad);
+    Robot.swerve.setDrivetrainRotation(chassisSpeeds.omegaRadiansPerSecond);
   }
 
   @Override

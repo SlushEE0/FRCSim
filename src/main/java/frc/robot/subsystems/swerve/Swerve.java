@@ -12,7 +12,7 @@ public class Swerve extends SubsystemBase {
   private final SwerveModuleIO[] modules = new SwerveModuleIO[4];
   private final ModuleData[] data = new ModuleData[4];
 
-  private static double drivetrainRotationRad;
+  public static double drivetrainRotationRad;
 
   public Swerve() {
     if (Constants.robot.isSim) {
@@ -24,7 +24,7 @@ public class Swerve extends SubsystemBase {
   }
 
   public Rotation2d getRotation2d() {
-    return new Rotation2d();
+    return new Rotation2d(drivetrainRotationRad);
   }
 
   public void setModuleStates(SwerveModuleState[] states) {

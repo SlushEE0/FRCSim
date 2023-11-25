@@ -40,7 +40,7 @@ public class RobotContainer {
     Robot.swerve.setDefaultCommand(
         new SwerveCMD(
             new DoubleSupplier[] { () -> -pilot.getLeftX(), () -> -pilot.getLeftY() },
-            new DoubleSupplier[] { () -> pilot.getRightX(), () -> -pilot.getRightY() }));
+            new DoubleSupplier[] { () -> -pilot.getRightX(), () -> -pilot.getRightY() }));
 
   }
 

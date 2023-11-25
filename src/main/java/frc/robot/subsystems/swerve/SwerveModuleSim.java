@@ -16,7 +16,7 @@ public class SwerveModuleSim implements SwerveModuleIO {
   private FlywheelSim turnSim = new FlywheelSim(DCMotor.getNEO(1), 150 / 7, 0.004);
 
   private PIDController drivePID = new PIDController(1, 0, 0);
-  private PIDController turnPID = new PIDController(7, 0, 0);
+  private PIDController turnPID = new PIDController(10, 0, 0);
 
   private SimpleMotorFeedforward driveFF = new SimpleMotorFeedforward(0, 3);
 
@@ -81,7 +81,7 @@ public class SwerveModuleSim implements SwerveModuleIO {
     state = SwerveModuleState.optimize(state, getCurrState().angle);
     theoreticalState = state;
 
-    SmartDashboard.putNumber("State Speed " + index, theoreticalState.speedMetersPerSecond);
+    // SmartDashboard.putNumber("State Speed " + index, theoreticalState.speedMetersPerSecond);
 
     if (Math.abs(state.speedMetersPerSecond) < 0.01) {
       state.speedMetersPerSecond = 0;
@@ -92,7 +92,7 @@ public class SwerveModuleSim implements SwerveModuleIO {
         state.speedMetersPerSecond);
     double turnVolts = turnPID.calculate(turnPositionRad, state.angle.getRadians());
 
-    SmartDashboard.putNumber("Drive Volts" + index, driveFFVolts + driveVolts);
+    // SmartDashboard.putNumber("Drive Volts" + index, driveFFVolts + driveVolts);
 
     setMotorVolts(driveFFVolts + driveVolts, driveSim);
     setMotorVolts(turnVolts, turnSim);
