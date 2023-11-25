@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
+import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 /**
@@ -25,8 +26,8 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
-  private final CommandXboxController pilot = new CommandXboxController(OperatorConstants.kDriverControllerPort);
-
+  // private final CommandXboxController pilot = new CommandXboxController(OperatorConstants.kDriverControllerPort);
+  private final CommandPS4Controller pilot = new CommandPS4Controller(0);
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
@@ -39,7 +40,7 @@ public class RobotContainer {
     Robot.swerve.setDefaultCommand(
         new SwerveCMD(
             new DoubleSupplier[] { () -> -pilot.getLeftX(), () -> -pilot.getLeftY() },
-            new DoubleSupplier[] { () -> pilot.getLeftX(), () -> -pilot.getRightY() }));
+            new DoubleSupplier[] { () -> pilot.getRightX(), () -> -pilot.getRightY() }));
 
   }
 

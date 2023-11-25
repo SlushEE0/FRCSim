@@ -29,7 +29,7 @@ public class SwerveCMD extends CommandBase {
     this.leftXSupplier = leftJoystick[1];
     this.leftYSupplier = leftJoystick[0];
 
-    this.rightXSupplier = rightJoystick[1];
+    this.rightXSupplier = rightJoystick[0];
 
     addRequirements(Robot.swerve);
   }
