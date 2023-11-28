@@ -15,11 +15,13 @@ public class Swerve extends SubsystemBase {
   public static double drivetrainRotationRad;
 
   public Swerve() {
-    if (Constants.robot.isSim) {
-      for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 4; i++) {
+      if (Constants.Robot.isSim) {
         modules[i] = new SwerveModuleSim();
-        data[i] = new ModuleData();
+      } else {
+        modules[i] = new SwerveModuleReal(i);
       }
+      data[i] = new ModuleData();
     }
   }
 

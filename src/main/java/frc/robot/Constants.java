@@ -22,7 +22,7 @@ import edu.wpi.first.math.util.Units;
  */
 public final class Constants {
 
-  public static class robot {
+  public static class Robot {
     public static final boolean isSim = true;
   }
 
