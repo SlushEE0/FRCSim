@@ -30,7 +30,7 @@ public final class Constants {
     public static final int kDriverControllerPort = 0;
   }
 
-  public static class Swerve {
+  public static class SwerveSim {
     public static final double maxSpeedMPS = 5;
     public static final double maxRotationSpeedRadPS = 2 * Math.PI;
     public static final double controllerDeadband = 0.1;
@@ -39,6 +39,26 @@ public final class Constants {
     public static final double horizontalBaseM = Units.inchesToMeters(17.5);
     public static final double wheelDiamM = Units.inchesToMeters(3.5);
     public static final double verticalBaseM = Units.inchesToMeters(17.5);
+
+    public static final SwerveDriveKinematics driveKinematics = new SwerveDriveKinematics(
+        new Translation2d(horizontalBaseM / 2, verticalBaseM / 2),
+        new Translation2d(horizontalBaseM / 2, -verticalBaseM / 2),
+        new Translation2d(-horizontalBaseM / 2, verticalBaseM / 2),
+        new Translation2d(-horizontalBaseM / 2, -verticalBaseM / 2));
+  }
+
+  public static class SwerveReal {
+    public static final double maxSpeedMPS = 5;
+    public static final double maxRotationSpeedRadPS = 2 * Math.PI;
+    public static final double controllerDeadband = 0.1;
+    public static final double maxDriveAccelMPS = 5;
+    public static final double maxRotationAccelRadPS = 2 * Math.PI;
+    public static final double horizontalBaseM = Units.inchesToMeters(17.5);
+    public static final double wheelDiamM = Units.inchesToMeters(3.5);
+    public static final double verticalBaseM = Units.inchesToMeters(17.5);
+
+    public static final int[] driveMotorPorts = { 0, 2, 4, 6 };
+    public static final int[] turnMotorPorts = { 1, 3, 5, 7 };
 
     public static final SwerveDriveKinematics driveKinematics = new SwerveDriveKinematics(
         new Translation2d(horizontalBaseM / 2, verticalBaseM / 2),

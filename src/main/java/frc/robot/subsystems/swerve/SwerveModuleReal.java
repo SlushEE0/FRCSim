@@ -1,5 +1,10 @@
 package frc.robot.subsystems.swerve;
 
+import javax.swing.text.Position;
+
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -9,9 +14,9 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import frc.robot.Constants;
 
-public class SwerveModuleSim implements SwerveModuleIO {
-  private FlywheelSim driveSim = new FlywheelSim(DCMotor.getNEO(1), 6.75, 0.025);
-  private FlywheelSim turnSim = new FlywheelSim(DCMotor.getNEO(1), 150 / 7, 0.004);
+public class SwerveModuleReal implements SwerveModuleIO {
+  private CANSparkMax driveMotor;
+  private CANSparkMax turnMotor;
 
   private PIDController drivePID = new PIDController(1, 0, 0);
   private PIDController turnPID = new PIDController(10, 0, 0);
@@ -27,36 +32,55 @@ public class SwerveModuleSim implements SwerveModuleIO {
   private double turnAppliedVolts = 0.0;
   private int index = 0;
 
-  public SwerveModuleSim() {
+  public SwerveModuleReal(int motorIndex) {
     turnPID.enableContinuousInput(0, 2 * Math.PI);
+
+    int driveMotorPort = Constants.SwerveReal.driveMotorPorts[motorIndex];
+    int turnMotorPort = Constants.SwerveReal.turnMotorPorts[motorIndex];
+
+    index = motorIndex;
+    driveMotor = new CANSparkMax(Math.abs(driveMotorPort), MotorType.kBrushless);
+    turnMotor = new CANSparkMax(Math.abs(turnMotorPort), MotorType.kBrushless);
+
+    if (driveMotorPort < 0) {
+      driveMotor.setInverted(true);
+    } else {
+      driveMotor.setInverted(false);
+    }
+
+    if (turnMotorPort < 0) {
+      turnMotor.setInverted(true);
+    } else {
+      turnMotor.setInverted(false);
+    }
   }
 
   private SwerveModuleState getCurrState() {
-    return new SwerveModuleState(driveSim.getAngularVelocityRadPerSec() * Constants.SwerveSim.wheelDiamM / 2,
+    return new SwerveModuleState(
+        (driveMotor.get() * Constants.SwerveReal.maxSpeedMPS) * Constants.SwerveReal.wheelDiamM / 2,
         new Rotation2d(turnPositionRad));
   }
 
   @Override
   public void updateData(ModuleData data) {
-    driveSim.update(0.02);
-    turnSim.update(0.02);
+    driveMotor.setControlFramePeriodMs(20);
+    turnMotor.setControlFramePeriodMs(20);
 
-    // SmartDashboard.putNumber("Drive vel " + data.index,
-    // driveSim.getAngularVelocityRadPerSec() * (Constants.Swerve.wheelDiamM / 2));
-
-    double meterDiff = driveSim.getAngularVelocityRadPerSec() * Constants.SwerveSim.wheelDiamM / 2 * 0.02;
+    double meterDiff = (driveMotor.get() * Constants.SwerveReal.maxSpeedMPS) * Constants.SwerveReal.wheelDiamM / 2
+        * 0.02;
     drivePositionM += meterDiff;
-    data.driveVelocityMPerSec = driveSim.getAngularVelocityRadPerSec() * (Constants.SwerveSim.wheelDiamM / 2);
-    data.driveCurrentAmps = driveSim.getCurrentDrawAmps();
+    data.driveVelocityMPerSec = (driveMotor.get() * Constants.SwerveReal.maxSpeedMPS)
+        * (Constants.SwerveReal.wheelDiamM / 2);
+    data.driveCurrentAmps = driveMotor.getOutputCurrent();
     data.drivePositionM = drivePositionM;
     data.driveAppliedVolts = driveAppliedVolts;
 
-    double angleDiff = turnSim.getAngularVelocityRadPerSec() * 0.02;
+    double angleDiff = (turnMotor.get() * Constants.SwerveReal.maxSpeedMPS) * 0.02;
     turnPositionRad += angleDiff;
     data.turnPositionRad = turnPositionRad;
-    data.turnVelocityRadPerSec = turnSim.getAngularVelocityRadPerSec();
+    data.turnVelocityRadPerSec = (turnMotor.get() * Constants.SwerveReal.maxSpeedMPS);
     data.turnAppliedVolts = turnAppliedVolts;
-    data.turnCurrentAmps = turnSim.getCurrentDrawAmps();
+    data.turnCurrentAmps = turnMotor.getOutputCurrent();
     data.turnAppliedVolts = turnAppliedVolts;
 
     while (turnPositionRad < 0) {
@@ -83,26 +107,25 @@ public class SwerveModuleSim implements SwerveModuleIO {
     }
 
     double driveFFVolts = driveFF.calculate(state.speedMetersPerSecond);
-    double driveVolts = drivePID.calculate(driveSim.getAngularVelocityRadPerSec() * Constants.SwerveSim.wheelDiamM / 2,
+    double driveVolts = drivePID.calculate(
+        (driveMotor.get() * Constants.SwerveReal.maxSpeedMPS) * Constants.SwerveReal.wheelDiamM / 2,
         state.speedMetersPerSecond);
     double turnVolts = turnPID.calculate(turnPositionRad, state.angle.getRadians());
 
     // SmartDashboard.putNumber("Drive Volts" + index, driveFFVolts + driveVolts);
 
-    setMotorVolts(driveFFVolts + driveVolts, driveSim);
-    setMotorVolts(turnVolts, turnSim);
+    setMotorVolts(driveFFVolts + driveVolts, driveMotor);
+    setMotorVolts(turnVolts, turnMotor);
   }
 
-  private void setMotorVolts(double volts, FlywheelSim flywheel) {
-    double setVolts = volts; // MathUtil.clamp(volts, -7.0, 7.0);
-
-    flywheel.setInputVoltage(setVolts);
+  private void setMotorVolts(double volts, CANSparkMax motor) {
+    motor.setVoltage(volts);
   }
 
   @Override
   public void stop() {
-    setMotorVolts(0.0, driveSim);
-    setMotorVolts(0.0, turnSim);
+    driveMotor.setVoltage(0.0);
+    turnMotor.setVoltage(0.0);
   }
 
   @Override

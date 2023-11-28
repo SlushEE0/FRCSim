@@ -28,7 +28,7 @@ public class Swerve extends SubsystemBase {
   }
 
   public void setModuleStates(SwerveModuleState[] states) {
-    SwerveDriveKinematics.desaturateWheelSpeeds(states, Constants.Swerve.maxSpeedMPS);
+    SwerveDriveKinematics.desaturateWheelSpeeds(states, Constants.SwerveSim.maxSpeedMPS);
     for (int i = 0; i < 4; i++) {
       modules[i].setDesiredState(states[i]);
     }

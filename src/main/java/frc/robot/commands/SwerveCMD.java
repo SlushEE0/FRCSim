@@ -20,9 +20,9 @@ public class SwerveCMD extends CommandBase {
   private DoubleSupplier leftYSupplier;
   private DoubleSupplier rightXSupplier;
 
-  private final SlewRateLimiter xDriveLimiter = new SlewRateLimiter(Constants.Swerve.maxDriveAccelMPS);
-  private final SlewRateLimiter yDriveLimiter = new SlewRateLimiter(Constants.Swerve.maxDriveAccelMPS);
-  private final SlewRateLimiter turnLimiter = new SlewRateLimiter(Constants.Swerve.maxRotationAccelRadPS);
+  private final SlewRateLimiter xDriveLimiter = new SlewRateLimiter(Constants.SwerveSim.maxDriveAccelMPS);
+  private final SlewRateLimiter yDriveLimiter = new SlewRateLimiter(Constants.SwerveSim.maxDriveAccelMPS);
+  private final SlewRateLimiter turnLimiter = new SlewRateLimiter(Constants.SwerveSim.maxRotationAccelRadPS);
 
   public SwerveCMD(DoubleSupplier[] leftJoystick, DoubleSupplier[] rightJoystick) {
     this.leftXSupplier = leftJoystick[1];
@@ -46,18 +46,18 @@ public class SwerveCMD extends CommandBase {
     double ySpeed = (leftYSupplier.getAsDouble());
     double turnSpeed = rightXSupplier.getAsDouble();
 
-    xSpeed = Math.abs(xSpeed) > Constants.Swerve.controllerDeadband ? xSpeed : 0;
-    ySpeed = Math.abs(ySpeed) > Constants.Swerve.controllerDeadband ? ySpeed : 0;
-    turnSpeed = Math.abs(turnSpeed) > Constants.Swerve.controllerDeadband ? turnSpeed : 0;
+    xSpeed = Math.abs(xSpeed) > Constants.SwerveSim.controllerDeadband ? xSpeed : 0;
+    ySpeed = Math.abs(ySpeed) > Constants.SwerveSim.controllerDeadband ? ySpeed : 0;
+    turnSpeed = Math.abs(turnSpeed) > Constants.SwerveSim.controllerDeadband ? turnSpeed : 0;
 
-    xSpeed = xDriveLimiter.calculate(xSpeed * Constants.Swerve.maxSpeedMPS);
-    ySpeed = yDriveLimiter.calculate(ySpeed * Constants.Swerve.maxSpeedMPS);
-    turnSpeed = turnLimiter.calculate(turnSpeed * Constants.Swerve.maxRotationSpeedRadPS);
+    xSpeed = xDriveLimiter.calculate(xSpeed * Constants.SwerveSim.maxSpeedMPS);
+    ySpeed = yDriveLimiter.calculate(ySpeed * Constants.SwerveSim.maxSpeedMPS);
+    turnSpeed = turnLimiter.calculate(turnSpeed * Constants.SwerveSim.maxRotationSpeedRadPS);
 
     ChassisSpeeds chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, turnSpeed,
         Robot.swerve.getRotation2d());
 
-    SwerveModuleState[] states = Constants.Swerve.driveKinematics.toSwerveModuleStates(chassisSpeeds);
+    SwerveModuleState[] states = Constants.SwerveSim.driveKinematics.toSwerveModuleStates(chassisSpeeds);
 
     Robot.swerve.setModuleStates(states);
     Robot.swerve.setDrivetrainRotation(chassisSpeeds.omegaRadiansPerSecond);
