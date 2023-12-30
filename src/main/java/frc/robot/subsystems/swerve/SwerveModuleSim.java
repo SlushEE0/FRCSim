@@ -59,6 +59,8 @@ public class SwerveModuleSim implements SwerveModuleIO {
     data.turnCurrentAmps = turnSim.getCurrentDrawAmps();
     data.turnAppliedVolts = turnAppliedVolts;
 
+    // position = new SwerveModulePosition(drivePositionM, );
+
     while (turnPositionRad < 0) {
       turnPositionRad += 2.0 * Math.PI;
     }

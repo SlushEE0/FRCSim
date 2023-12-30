@@ -11,6 +11,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
 /** An example command that uses an example subsystem. */
@@ -47,7 +48,7 @@ public class SwerveCMD extends CommandBase {
     double ySpeed = (leftYSupplier.getAsDouble());
     double turnSpeed = rightXSupplier.getAsDouble();
 
-    double drivetrainRotation;
+    double rotationDiff;
 
     xSpeed = Math.abs(xSpeed) > Constants.SwerveSim.controllerDeadband ? xSpeed : 0;
     ySpeed = Math.abs(ySpeed) > Constants.SwerveSim.controllerDeadband ? ySpeed : 0;
@@ -60,17 +61,20 @@ public class SwerveCMD extends CommandBase {
     ChassisSpeeds chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, turnSpeed,
         Robot.swerve.getRotation2d());
 
-    if (Constants.Robot.isSim) {
-      drivetrainRotation = chassisSpeeds.omegaRadiansPerSecond;
+    if (Constants.isSim) {
+      rotationDiff = chassisSpeeds.omegaRadiansPerSecond * 0.02;
     } else {
       // write code to get position from gyro
-      throw new Error("Didn't make gyro pos code");
+      // throw new Error("Didn't make gyro pos code");
+
+      SmartDashboard.putString("no Gyro", "gyro code not implemented at SwerveCMD:71");
+      rotationDiff = 0;
     }
 
     SwerveModuleState[] states = Constants.SwerveSim.driveKinematics.toSwerveModuleStates(chassisSpeeds);
 
     Robot.swerve.setModuleStates(states);
-    Robot.swerve.setDrivetrainRotation(drivetrainRotation);
+    Robot.swerve.setDrivetrainRotation(rotationDiff);
   }
 
   @Override

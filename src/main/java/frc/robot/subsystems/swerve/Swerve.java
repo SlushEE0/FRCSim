@@ -1,7 +1,12 @@
 package frc.robot.subsystems.swerve;
 
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -12,17 +17,25 @@ public class Swerve extends SubsystemBase {
   private final SwerveModuleIO[] modules = new SwerveModuleIO[4];
   private final ModuleData[] data = new ModuleData[4];
 
-  public static double drivetrainRotationRad;
+  public double drivetrainRotationRad = 0;
+  SwerveDrivePoseEstimator swervePose;
 
   public Swerve() {
     for (int i = 0; i < 4; i++) {
-      if (Constants.Robot.isSim) {
+      if (Constants.isSim) {
         modules[i] = new SwerveModuleSim();
       } else {
-        modules[i] = new SwerveModuleReal(i);
+        modules[i] = new SwerveModuleSpark(i);
       }
       data[i] = new ModuleData();
     }
+
+    SwerveModulePosition[] poseArr = { data[0].position, data[1].position, data[2].position, data[3].position };
+
+    swervePose = new SwerveDrivePoseEstimator(Constants.SwerveReal.driveKinematics,
+        getRotation2d(),
+        poseArr,
+        new Pose2d(new Translation2d(0, 0), new Rotation2d(0, 0)));
   }
 
   public Rotation2d getRotation2d() {
@@ -38,8 +51,13 @@ public class Swerve extends SubsystemBase {
     periodic();
   }
 
-  public void setDrivetrainRotation(double rotation) {
-    drivetrainRotationRad = rotation;
+  public void setDrivetrainRotation(double rotationDiff) {
+    drivetrainRotationRad = Math.toRadians(Math.toDegrees(drivetrainRotationRad + rotationDiff) % 360);
+  }
+
+  public void updatePose() {
+    SwerveModulePosition[] newPoseArr = { data[0].position, data[1].position, data[2].position, data[3].position };
+    swervePose.update(getRotation2d(), newPoseArr);
   }
 
   @Override
@@ -47,6 +65,7 @@ public class Swerve extends SubsystemBase {
     for (int i = 0; i < 4; i++) {
       modules[i].updateData(data[i]);
     }
+    updatePose();
 
     double[] realStates = {
         Math.toDegrees(data[0].turnPositionRad),
@@ -73,6 +92,7 @@ public class Swerve extends SubsystemBase {
     SmartDashboard.putNumberArray("Real States", realStates);
     SmartDashboard.putNumberArray("Theoretical States", theoryStates);
     SmartDashboard.putNumber("Drivetrain Rotation", Math.toDegrees(drivetrainRotationRad));
+    SmartDashboard.putNumber("name", swervePose.getEstimatedPosition().getX());
   }
 
   @Override

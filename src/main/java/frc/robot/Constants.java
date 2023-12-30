@@ -22,9 +22,7 @@ import edu.wpi.first.math.util.Units;
  */
 public final class Constants {
 
-  public static class Robot {
-    public static final boolean isSim = true;
-  }
+  public static final boolean isSim = Robot.isSimulation();
 
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
@@ -57,8 +55,11 @@ public final class Constants {
     public static final double wheelDiamM = Units.inchesToMeters(3.5);
     public static final double verticalBaseM = Units.inchesToMeters(17.5);
 
-    public static final int[] driveMotorPorts = { 0, 2, 4, 6 };
-    public static final int[] turnMotorPorts = { 1, 3, 5, 7 };
+    public static final int[] turnMotorPorts = { 2, 4, 8, 6 };
+    public static final int[] driveMotorPorts = { 1, 3, 7, 5 };
+    public static final int[] absoluteEncoderPorts = { 9, 10, 11, 12 };
+
+    public static final double driveGearRatio = 1 / 6.75;
 
     public static final SwerveDriveKinematics driveKinematics = new SwerveDriveKinematics(
         new Translation2d(horizontalBaseM / 2, verticalBaseM / 2),

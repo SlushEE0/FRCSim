@@ -26,8 +26,11 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
-  // private final CommandXboxController pilot = new CommandXboxController(OperatorConstants.kDriverControllerPort);
-  private final CommandPS4Controller pilot = new CommandPS4Controller(0);
+  // private final CommandXboxController pilot = new
+  // CommandXboxController(OperatorConstants.kDriverControllerPort);
+
+  private final CommandPS4Controller pilot = new CommandPS4Controller(OperatorConstants.kDriverControllerPort);
+
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
@@ -45,7 +48,8 @@ public class RobotContainer {
   }
 
   /**
-   * Use this to pass the autonomous command to the main {@link Robot} class.
+   * Use this to pass the autonomous command to the main {@link Robot}
+   * class.
    *
    * @return the command to run in autonomous
    */

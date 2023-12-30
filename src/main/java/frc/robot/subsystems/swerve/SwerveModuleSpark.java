@@ -1,6 +1,11 @@
 package frc.robot.subsystems.swerve;
 
+import com.ctre.phoenix.sensors.AbsoluteSensorRange;
+import com.ctre.phoenix.sensors.CANCoder;
+import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.math.controller.PIDController;
@@ -10,9 +15,12 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import frc.robot.Constants;
 
-public class SwerveModuleReal implements SwerveModuleIO {
+public class SwerveModuleSpark implements SwerveModuleIO {
   private CANSparkMax driveMotor;
   private CANSparkMax turnMotor;
+
+  private RelativeEncoder driveEncoder;
+  private CANCoder absoluteEncoder;
 
   private PIDController drivePID = new PIDController(1, 0, 0);
   private PIDController turnPID = new PIDController(10, 0, 0);
@@ -26,9 +34,9 @@ public class SwerveModuleReal implements SwerveModuleIO {
 
   private double turnPositionRad = 0.0;
   private double turnAppliedVolts = 0.0;
-  private int index = 0;
+  int index = 0;
 
-  public SwerveModuleReal(int motorIndex) {
+  public SwerveModuleSpark(int motorIndex) {
     turnPID.enableContinuousInput(0, 2 * Math.PI);
 
     int driveMotorPort = Constants.SwerveReal.driveMotorPorts[motorIndex];
@@ -49,35 +57,32 @@ public class SwerveModuleReal implements SwerveModuleIO {
     } else {
       turnMotor.setInverted(false);
     }
+
+    driveEncoder = driveMotor.getEncoder();
+    absoluteEncoder = new CANCoder(Constants.SwerveReal.absoluteEncoderPorts[index]);
+
+    driveEncoder.setVelocityConversionFactor(Constants.SwerveReal.driveGearRatio);
+    absoluteEncoder.configAbsoluteSensorRange(AbsoluteSensorRange.Unsigned_0_to_360);
   }
 
   private SwerveModuleState getCurrState() {
     return new SwerveModuleState(
-        (driveMotor.get() * Constants.SwerveReal.maxSpeedMPS) * Constants.SwerveReal.wheelDiamM / 2,
+        (driveEncoder.getVelocity() * 2 * Math.PI / 60) * Constants.SwerveReal.wheelDiamM / 2,
         new Rotation2d(turnPositionRad));
   }
 
   @Override
   public void updateData(ModuleData data) {
-    driveMotor.setControlFramePeriodMs(20);
-    turnMotor.setControlFramePeriodMs(20);
-
-    double meterDiff = (driveMotor.get() * Constants.SwerveReal.maxSpeedMPS) * Constants.SwerveReal.wheelDiamM / 2
-        * 0.02;
-    drivePositionM += meterDiff;
-    data.driveVelocityMPerSec = (driveMotor.get() * Constants.SwerveReal.maxSpeedMPS)
-        * (Constants.SwerveReal.wheelDiamM / 2);
+    data.driveVelocityMPerSec = driveEncoder.getVelocity() * Math.PI
+        * Constants.SwerveReal.wheelDiamM;
     data.driveCurrentAmps = driveMotor.getOutputCurrent();
-    data.drivePositionM = drivePositionM;
-    data.driveAppliedVolts = driveAppliedVolts;
+    data.drivePositionM = driveEncoder.getPosition() * Constants.SwerveReal.wheelDiamM * Math.PI;
+    data.driveAppliedVolts = driveMotor.getBusVoltage();
 
-    double angleDiff = (turnMotor.get() * Constants.SwerveReal.maxSpeedMPS) * 0.02;
-    turnPositionRad += angleDiff;
-    data.turnPositionRad = turnPositionRad;
-    data.turnVelocityRadPerSec = (turnMotor.get() * Constants.SwerveReal.maxSpeedMPS);
-    data.turnAppliedVolts = turnAppliedVolts;
+    data.turnPositionRad = Math.toRadians(absoluteEncoder.getAbsolutePosition());
+    data.turnVelocityRadPerSec = Math.toRadians(absoluteEncoder.getVelocity());
+    data.turnAppliedVolts = turnMotor.getBusVoltage();
     data.turnCurrentAmps = turnMotor.getOutputCurrent();
-    data.turnAppliedVolts = turnAppliedVolts;
 
     while (turnPositionRad < 0) {
       turnPositionRad += 2.0 * Math.PI;
@@ -86,17 +91,11 @@ public class SwerveModuleReal implements SwerveModuleIO {
     while (turnPositionRad > 2.0 * Math.PI) {
       turnPositionRad -= 2.0 * Math.PI;
     }
-
-    data.theoreticalState = theoreticalState;
   }
 
   @Override
   public void setDesiredState(SwerveModuleState state) {
     state = SwerveModuleState.optimize(state, getCurrState().angle);
-    theoreticalState = state;
-
-    // SmartDashboard.putNumber("State Speed " + index,
-    // theoreticalState.speedMetersPerSecond);
 
     if (Math.abs(state.speedMetersPerSecond) < 0.01) {
       state.speedMetersPerSecond = 0;
@@ -104,7 +103,7 @@ public class SwerveModuleReal implements SwerveModuleIO {
 
     double driveFFVolts = driveFF.calculate(state.speedMetersPerSecond);
     double driveVolts = drivePID.calculate(
-        (driveMotor.get() * Constants.SwerveReal.maxSpeedMPS) * Constants.SwerveReal.wheelDiamM / 2,
+        driveEncoder.getPosition(),
         state.speedMetersPerSecond);
     double turnVolts = turnPID.calculate(turnPositionRad, state.angle.getRadians());
 
@@ -118,17 +117,19 @@ public class SwerveModuleReal implements SwerveModuleIO {
     motor.setVoltage(volts);
   }
 
-  @Override
+  @Override 
   public void stop() {
-    driveMotor.setVoltage(0.0);
-    turnMotor.setVoltage(0.0);
+    driveMotor.set(0.0);
+    turnMotor.set(0.0);
   }
 
   @Override
   public void setDriveBrakeMode(boolean enable) {
+    driveMotor.setIdleMode(enable ? IdleMode.kBrake : IdleMode.kCoast);
   }
 
   @Override
   public void setTurningBrakeMode(boolean enable) {
+    turnMotor.setIdleMode(enable ? IdleMode.kBrake : IdleMode.kCoast);
   }
 }
