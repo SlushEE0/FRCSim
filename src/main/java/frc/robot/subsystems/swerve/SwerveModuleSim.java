@@ -22,10 +22,11 @@ public class SwerveModuleSim implements SwerveModuleIO {
   private SwerveModuleState theoreticalState = new SwerveModuleState();
   private double drivePositionM = 0.0;
   private double driveAppliedVolts = 0.0;
+  private int index = 0;
 
   private double turnPositionRad = 0.0;
   private double turnAppliedVolts = 0.0;
-  private int index = 0;
+
 
   public SwerveModuleSim() {
     turnPID.enableContinuousInput(0, 2 * Math.PI);
@@ -59,7 +60,7 @@ public class SwerveModuleSim implements SwerveModuleIO {
     data.turnCurrentAmps = turnSim.getCurrentDrawAmps();
     data.turnAppliedVolts = turnAppliedVolts;
 
-    // position = new SwerveModulePosition(drivePositionM, );
+    data.position = new SwerveModulePosition(drivePositionM, new Rotation2d(turnPositionRad));
 
     while (turnPositionRad < 0) {
       turnPositionRad += 2.0 * Math.PI;

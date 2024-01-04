@@ -84,6 +84,8 @@ public class SwerveModuleSpark implements SwerveModuleIO {
     data.turnAppliedVolts = turnMotor.getBusVoltage();
     data.turnCurrentAmps = turnMotor.getOutputCurrent();
 
+    data.position = new SwerveModulePosition(drivePositionM, new Rotation2d(turnPositionRad));
+
     while (turnPositionRad < 0) {
       turnPositionRad += 2.0 * Math.PI;
     }
@@ -117,7 +119,7 @@ public class SwerveModuleSpark implements SwerveModuleIO {
     motor.setVoltage(volts);
   }
 
-  @Override 
+  @Override
   public void stop() {
     driveMotor.set(0.0);
     turnMotor.set(0.0);

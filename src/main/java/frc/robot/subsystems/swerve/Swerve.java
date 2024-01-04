@@ -42,6 +42,12 @@ public class Swerve extends SubsystemBase {
     return new Rotation2d(drivetrainRotationRad);
   }
 
+  public Pose2d getPose() {
+    Pose2d estimatedPose = swervePose.getEstimatedPosition();
+
+    return new Pose2d(estimatedPose.getTranslation(), getRotation2d());
+  }
+
   public void setModuleStates(SwerveModuleState[] states) {
     SwerveDriveKinematics.desaturateWheelSpeeds(states, Constants.SwerveSim.maxSpeedMPS);
     for (int i = 0; i < 4; i++) {
@@ -52,7 +58,7 @@ public class Swerve extends SubsystemBase {
   }
 
   public void setDrivetrainRotation(double rotationDiff) {
-    drivetrainRotationRad = Math.toRadians(Math.toDegrees(drivetrainRotationRad + rotationDiff) % 360);
+    drivetrainRotationRad = (drivetrainRotationRad + rotationDiff) % (2 * Math.PI);
   }
 
   public void updatePose() {
@@ -92,7 +98,10 @@ public class Swerve extends SubsystemBase {
     SmartDashboard.putNumberArray("Real States", realStates);
     SmartDashboard.putNumberArray("Theoretical States", theoryStates);
     SmartDashboard.putNumber("Drivetrain Rotation", Math.toDegrees(drivetrainRotationRad));
-    SmartDashboard.putNumber("name", swervePose.getEstimatedPosition().getX());
+    SmartDashboard.putNumber("Robot Pose X", getPose().getX());
+    SmartDashboard.putNumber("Robot Pose Y", getPose().getY());
+    SmartDashboard.putNumberArray("Odometry",
+        new double[] { getPose().getX(), getPose().getY(), getPose().getRotation().getDegrees() });
   }
 
   @Override
